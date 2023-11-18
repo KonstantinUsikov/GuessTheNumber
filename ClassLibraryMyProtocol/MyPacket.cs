@@ -123,8 +123,14 @@ namespace ClassLibraryMyProtocol
 		/// <param name="id"> идентификатор </param>
 		/// <param name="structure"> структура </param>
 		/// <returns> true - если удалось, false - если нет </returns>
-		public bool SetValue<T>(byte id, T structure) where T : struct
+		public bool SetValue<T>(byte id, T structure)
 		{
+			// Проверяем, является ли тип T значимым
+			if (structure == null || !structure.GetType().IsValueType)
+			{
+				return false;
+			}
+
 			// Если поле с таким id уже есть, выйти из метода
 			MyPacketField? field = GetField(id);
 			if (field != null)
@@ -176,6 +182,25 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
+		/// Получить поле пакета по идентификатору.
+		/// </summary>
+		/// <param name="id"> идентификатор поля </param>
+		/// <returns> поле пакета </returns>
+		public MyPacketField? GetField(byte id)
+		{
+			// В цикле ищем поле с нужным id
+			foreach (MyPacketField field in Fields)
+			{
+				if (field.FieldID == id)
+				{
+					return field;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
 		/// Приведение класса к пакету (массиву байт).
 		/// </summary>
 		/// <returns> массив байт </returns>
@@ -209,8 +234,14 @@ namespace ClassLibraryMyProtocol
 		/// <typeparam name="T"> тип структуры </typeparam>
 		/// <param name="structure"> структура </param>
 		/// <returns> массив байт </returns>
-		private byte[] StructureToByteArray<T>(T structure) where T : struct
+		private byte[] StructureToByteArray<T>(T structure)
 		{
+			// Проверяем на null
+			if (structure == null)
+			{
+				return new byte[0];
+			}
+
 			// Получаем размер объекта
 			int rawsize = Marshal.SizeOf(structure);
 
@@ -242,25 +273,6 @@ namespace ClassLibraryMyProtocol
 			handle.Free();
 
 			return structure;
-		}
-
-		/// <summary>
-		/// Получить поле пакета по идентификатору.
-		/// </summary>
-		/// <param name="id"> идентификатор поля </param>
-		/// <returns> поле пакета </returns>
-		private MyPacketField? GetField(byte id)
-		{
-			// В цикле ищем поле с нужным id
-			foreach (MyPacketField field in Fields)
-			{
-				if (field.FieldID == id)
-				{
-					return field;
-				}
-			}
-
-			return null;
 		}
 		#endregion
 	}
