@@ -2,6 +2,9 @@
 
 namespace ClassLibraryMyProtocol
 {
+	/// <summary>
+	/// Класс "Пакет".
+	/// </summary>
 	public class MyPacket
 	{
 		#region Свойства
@@ -39,7 +42,8 @@ namespace ClassLibraryMyProtocol
 		/// <param name="packet"> представление пакета в виде масива байт </param>
 		public MyPacket(byte[] packet)
 		{
-			if (TryParse(packet, out MyPacket myPacket))
+			MyPacket? myPacket = Parse(packet);
+			if (myPacket != null)
 			{
 				PacketType = myPacket.PacketType;
 				PacketSubtype = myPacket.PacketSubtype;
@@ -48,33 +52,29 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
-		/// Попробовать перевести пакет из массива байт в класс.
+		/// Перевод пакета из массива байт в класс.
 		/// </summary>
 		/// <param name="packet"> пакет (массив байт) </param>
-		/// <param name="result"> объект класса MyPacket </param>
-		/// <returns> true - если удалось, false - если нет </returns>
-		private bool TryParse(byte[] packet, out MyPacket result)
+		/// <returns> объект класса MyPacket </returns>
+		private MyPacket? Parse(byte[] packet)
 		{
 			// Проверка размера пакета
 			if (packet.Length < 7)
 			{
-				result = new MyPacket(0, 0);
-				return false;
+				return null;
 			}
 
 			// Проверка байтов начала пакета
 			if (packet[0] != 0xAF || packet[1] != 0xAA || packet[2] != 0xAF)
 			{
-				result = new MyPacket(0, 0);
-				return false;
+				return null;
 			}
 
 			// Проверка байтов окончания пакета
 			int mIndex = packet.Length - 1;
 			if (packet[mIndex - 1] != 0xFF || packet[mIndex] != 0x00)
 			{
-				result = new MyPacket(0, 0);
-				return false;
+				return null;
 			}
 
 			// Получаем тип и подтип пакета
@@ -90,8 +90,7 @@ namespace ClassLibraryMyProtocol
 				// Если длина поля равна 2, то это признак окончания пакета
 				if (fields.Length == 2)
 				{
-					result = myPacket;
-					return true;
+					return myPacket;
 				}
 
 				// Получаем идентификатор и размер пакета
@@ -118,16 +117,17 @@ namespace ClassLibraryMyProtocol
 
 		#region Публичные методы
 		/// <summary>
-		/// Попробовать записать структуру в пакет.
+		/// Записать структуру в пакет.
 		/// </summary>
 		/// <typeparam name="T"> тип структуры </typeparam>
 		/// <param name="id"> идентификатор </param>
 		/// <param name="structure"> структура </param>
 		/// <returns> true - если удалось, false - если нет </returns>
-		public bool TrySetValue<T>(byte id, T structure) where T : struct
+		public bool SetValue<T>(byte id, T structure) where T : struct
 		{
 			// Если поле с таким id уже есть, выйти из метода
-			if (TryGetField(id, out MyPacketField field))
+			MyPacketField? field = GetField(id);
+			if (field != null)
 			{
 				return false;
 			}
@@ -150,33 +150,29 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
-		/// Попробовать получить значение поля по идентификатору.
+		/// Получить значение поля по идентификатору.
 		/// </summary>
 		/// <typeparam name="T"> тип значения </typeparam>
 		/// <param name="id"> идентификатор </param>
-		/// <param name="result"> значение поля </param>
-		/// <returns> true - если удалось, false - если нет </returns>
-		public bool TryGetValue<T>(byte id, out T result) where T : struct
+		/// <returns> значение поля </returns>
+		public T? GetValue<T>(byte id) where T : struct
 		{
 			// Пытаемся получить поле по id
-			MyPacketField field;
-			if (!TryGetField(id, out field))
+			MyPacketField? field = GetField(id);
+			if (field == null)
 			{
-				result = default(T);
-				return false;
+				return null;
 			}
 
 			// Проверяем, что размер структуры T совпадаем с размером поля пакета
 			int neededSize = Marshal.SizeOf(typeof(T));
 			if (field.FieldSize != neededSize)
 			{
-				result = default(T);
-				return false;
+				return null;
 			}
 
 			// Парсим поле и возвращаем результат
-			result = ByteArrayToStructure<T>(field.Contents);
-			return true;
+			return ByteArrayToStructure<T>(field.Contents);
 		}
 
 		/// <summary>
@@ -249,25 +245,22 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
-		/// Попробовать получить поле пакета по идентификатору.
+		/// Получить поле пакета по идентификатору.
 		/// </summary>
 		/// <param name="id"> идентификатор поля </param>
-		/// <param name="result"> поле пакета </param>
-		/// <returns> true - если удалось, false - если нет </returns>
-		private bool TryGetField(byte id, out MyPacketField result)
+		/// <returns> поле пакета </returns>
+		private MyPacketField? GetField(byte id)
 		{
 			// В цикле ищем поле с нужным id
 			foreach (MyPacketField field in Fields)
 			{
 				if (field.FieldID == id)
 				{
-					result = field;
-					return true;
+					return field;
 				}
 			}
 
-			result = new MyPacketField();
-			return false;
+			return null;
 		}
 		#endregion
 	}

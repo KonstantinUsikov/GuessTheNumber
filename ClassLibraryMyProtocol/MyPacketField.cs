@@ -1,5 +1,8 @@
 ﻿namespace ClassLibraryMyProtocol
 {
+	/// <summary>
+	/// Класс "Поле пакета".
+	/// </summary>
 	public class MyPacketField
 	{
 		/// <summary>
