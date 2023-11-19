@@ -1,5 +1,7 @@
-﻿using ClassLibraryMyProtocol;
-using ConsoleClient;
+﻿using ClassLibraryMyProtocol.MyPacketMain;
+using ClassLibraryMyProtocol.Packets;
+using ClassLibraryMyProtocol.PacketTypes;
+using ClassLibraryMyProtocol.Client;
 
 Console.Title = "Client";
 

@@ -1,12 +1,14 @@
-﻿using ClassLibraryMyProtocol;
+﻿using ClassLibraryMyProtocol.MyPacketMain;
+using ClassLibraryMyProtocol.Packets;
+using ClassLibraryMyProtocol.PacketTypes;
 using System.Net.Sockets;
 
-namespace ConsoleServer
+namespace ClassLibraryMyProtocol.Server
 {
-	/// <summary>
-	/// Класс, представляющий подключенного клиента.
-	/// </summary>
-	public class ConnectedClient
+    /// <summary>
+    /// Класс, представляющий подключенного клиента.
+    /// </summary>
+    public class ConnectedClient
 	{
 		/// <summary>
 		/// Сокет клиента.

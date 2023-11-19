@@ -1,7 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 
-namespace ConsoleServer
+namespace ClassLibraryMyProtocol.Server
 {
 	/// <summary>
 	/// Класс "Сервер".

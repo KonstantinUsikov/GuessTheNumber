@@ -1,4 +1,4 @@
-﻿using ConsoleServer;
+﻿using ClassLibraryMyProtocol.Server;
 
 Console.Title = "Server";
 

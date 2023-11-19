@@ -1,13 +1,15 @@
 ﻿using System.Net.Sockets;
 using System.Net;
-using ClassLibraryMyProtocol;
+using ClassLibraryMyProtocol.Packets;
+using ClassLibraryMyProtocol.PacketTypes;
+using ClassLibraryMyProtocol.MyPacketMain;
 
-namespace ConsoleClient
+namespace ClassLibraryMyProtocol.Client
 {
-	/// <summary>
-	/// Класс клиента, позволяет подключаться к серверу, отправлять и получать пакеты.
-	/// </summary>
-	public class Client
+    /// <summary>
+    /// Класс клиента, позволяет подключаться к серверу, отправлять и получать пакеты.
+    /// </summary>
+    public class Client
 	{
 		/// <summary>
 		/// Сокет.

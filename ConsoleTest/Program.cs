@@ -1,4 +1,5 @@
-﻿using ClassLibraryMyProtocol;
+﻿using ClassLibraryMyProtocol.MyPacketMain;
+using ClassLibraryMyProtocol.Packets;
 
 MyPacket packet = MyPacket.Create(1, 0);
 packet.SetValue(0, 123);
