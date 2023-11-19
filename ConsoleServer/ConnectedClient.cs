@@ -138,7 +138,7 @@ namespace ConsoleServer
 				// Если очередь отправки не пуста
 				if (PacketSendingQueue.Count != 0)
 				{
-					// Получить пакет и отправить его
+					// Получить пакет из очереди и отправить его
 					byte[] packet = PacketSendingQueue.Dequeue();
 					ClientSocket.Send(packet);
 				}

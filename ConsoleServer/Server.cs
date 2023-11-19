@@ -25,7 +25,7 @@ namespace ConsoleServer
 
 
 		/// <summary>
-		/// Конструктор
+		/// Конструктор.
 		/// </summary>
 		public Server()
 		{
@@ -61,8 +61,8 @@ namespace ConsoleServer
 		{
 			if (Listening)
 			{
-				// Закрываем соединение в обоих направлениях
-				ServerSocket.Shutdown(SocketShutdown.Both);
+				// Закрываем соединение
+				ServerSocket.Close();
 				Listening = false;
 			}
 		}
