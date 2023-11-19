@@ -19,7 +19,7 @@ Thread.Sleep(5000);
 // Создаем пакет для отправки
 MyPacketHandshake handshakePacket = new MyPacketHandshake
 {
-	MagicHandshakeNumber = TestHandshake.HandshakeNumber
+	MagicHandshakeNumber = MyPacketHandshake.HandshakeNumber
 };
 
 // Приводим пакет к MyPacket

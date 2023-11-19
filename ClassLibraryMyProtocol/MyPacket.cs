@@ -3,7 +3,7 @@
 namespace ClassLibraryMyProtocol
 {
 	/// <summary>
-	/// Класс "Пакет".
+	/// Класс "Пакет", предоставляет методы для добавления и чтения значений, шифрования и расшифрования пакета.
 	/// </summary>
 	public class MyPacket
 	{
@@ -22,6 +22,11 @@ namespace ClassLibraryMyProtocol
 		/// Список полей пакета.
 		/// </summary>
 		public List<MyPacketField> Fields { get; set; } = new List<MyPacketField>();
+
+		/// <summary>
+		/// Зашифрован ли пакет.
+		/// </summary>
+		public bool Encrypted { get; set; }
 		#endregion
 
 		#region Фабричные методы
@@ -46,11 +51,12 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
-		/// Фабричный метод для создания пакета.
+		/// Фабричный метод для создания пакета, если пакет зашифрован автоматически его расшифровывает.
 		/// </summary>
 		/// <param name="packet"> представление пакета в виде масива байт </param>
+		/// <param name="markAsEncrypted"> был ли расшифрован пакет </param>
 		/// <returns> пакет </returns>
-		public static MyPacket? Create(byte[] packet)
+		public static MyPacket? Create(byte[] packet, bool markAsEncrypted = false)
 		{
 			// Проверка размера пакета
 			if (packet.Length < 7)
@@ -59,7 +65,16 @@ namespace ClassLibraryMyProtocol
 			}
 
 			// Проверка байтов начала пакета
-			if (packet[0] != 0xAF || packet[1] != 0xAA || packet[2] != 0xAF)
+			bool encrypted;
+			if (packet[0] == 0xAF && packet[1] == 0xAA && packet[2] == 0xAF)
+			{
+				encrypted = false;
+			}
+			else if (packet[0] == 0x95 && packet[1] == 0xAA && packet[2] == 0xFF)
+			{
+				encrypted = true;
+			}
+			else
 			{
 				return null;
 			}
@@ -84,7 +99,8 @@ namespace ClassLibraryMyProtocol
 				// Если длина поля равна 2, то это признак окончания пакета
 				if (fields.Length == 2)
 				{
-					return myPacket;
+					// Если пакет зашифрован, то расшифровать его
+					return encrypted ? DecryptPacket(myPacket) : myPacket;
 				}
 
 				// Получаем идентификатор и размер пакета
@@ -106,6 +122,75 @@ namespace ClassLibraryMyProtocol
 				// Переходим к следующему полю
 				fields = fields.Skip(2 + size).ToArray();
 			}
+		}
+		#endregion
+
+		#region Методы шифрования
+		/// <summary>
+		/// Зашифровать пакет.
+		/// </summary>
+		/// <returns> зашифрованный пакет </returns>
+		public MyPacket? Encrypt()
+		{
+			return EncryptPacket(this);
+		}
+
+		/// <summary>
+		/// Расшифровать пакет.
+		/// </summary>
+		/// <returns> расшифрованный пакет </returns>
+		public MyPacket? Decrypt()
+		{
+			return DecryptPacket(this);
+		}
+
+		/// <summary>
+		/// Зашифровать пакет.
+		/// </summary>
+		/// <param name="packet"> пакет для шифрования </param>
+		/// <returns> зашифрованный пакет </returns>
+		private static MyPacket? EncryptPacket(MyPacket packet)
+		{
+			// Получаем пакет в байтах
+			byte[] rawBytes = packet.ToPacket();
+			// Шифруем этот пакет
+			byte[] encrypted = MyProtocolEncryptor.Encrypt(rawBytes);
+
+			// Создаем новый пакет
+			MyPacket myPacket = Create(0, 0);
+			// Записываем в него зашифрованные данные, обязательно с id = 0
+			myPacket.SetValueRaw(0, encrypted);
+			// Помечаем пакет как зашифрованный
+			myPacket.Encrypted = true;
+
+			return myPacket;
+		}
+
+		/// <summary>
+		/// Расшифровать пакет.
+		/// </summary>
+		/// <param name="packet"> пакет для расшифрования </param>
+		/// <returns> расшифрованный пакет </returns>
+		private static MyPacket? DecryptPacket(MyPacket packet)
+		{
+			// Зашифрованные данные должны быть в поле с id = 0
+			if (packet.GetField(0) == null)
+			{
+				return null; 
+			}
+
+			// Получаем зашифрованный пакет
+			byte[]? rawData = packet.GetValueRaw(0); 
+			if (rawData == null)
+			{
+				return null;
+			}
+
+			// Расшифровываем пакет
+			byte[] decrypted = MyProtocolEncryptor.Decrypt(rawData);
+
+			// Создаем новый пакет при помощи расшифрованных данных
+			return Create(decrypted, true);
 		}
 		#endregion
 
@@ -176,6 +261,54 @@ namespace ClassLibraryMyProtocol
 		}
 
 		/// <summary>
+		/// Записать поле в пакет.
+		/// </summary>
+		/// <param name="id"> идентификатор </param>
+		/// <param name="rawData"> массив байт </param>
+		/// <returns> true - если удалось, false - если нет </returns>
+		public bool SetValueRaw(byte id, byte[] rawData)
+		{
+			// Если поле с таким id уже есть, выйти из метода
+			MyPacketField? field = GetField(id);
+			if (field != null)
+			{
+				return false;
+			}
+
+			// Проверка размера массива
+			if (rawData.Length > byte.MaxValue)
+			{
+				return false;
+			}
+
+			// Добавляем поле в пакет
+			Fields.Add(new MyPacketField
+			{
+				FieldID = id,
+				FieldSize = (byte)rawData.Length,
+				Contents = rawData
+			});
+			return true;
+		}
+
+		/// <summary>
+		/// Получить поле по идентификатору.
+		/// </summary>
+		/// <param name="id"> идентификатор </param>
+		/// <returns> поле (массив байт) </returns>
+		public byte[]? GetValueRaw(byte id)
+		{
+			// Пытаемся получить поле по id
+			MyPacketField? field = GetField(id);
+			if (field == null)
+			{
+				return null;
+			}
+
+			return field.Contents;
+		}
+
+		/// <summary>
 		/// Получить поле пакета по идентификатору.
 		/// </summary>
 		/// <param name="id"> идентификатор поля </param>
@@ -203,12 +336,15 @@ namespace ClassLibraryMyProtocol
 			MemoryStream packet = new MemoryStream();
 
 			// Записываем байты начала пакета
-			packet.Write(new byte[] { 0xAF, 0xAA, 0xAF, PacketType, PacketSubtype }, 0, 5);
+			packet.Write(
+				Encrypted
+					? new byte[] { 0x95, 0xAA, 0xFF, PacketType, PacketSubtype }
+					: new byte[] { 0xAF, 0xAA, 0xAF, PacketType, PacketSubtype }, 0, 5);
 
 			IEnumerable<MyPacketField> fields = Fields.OrderBy(field => field.FieldID);
 			foreach (MyPacketField field in fields)
 			{
-				// Запивысаем идентификатор и размер поля
+				// Записываем идентификатор и размер поля
 				packet.Write(new[] { field.FieldID, field.FieldSize }, 0, 2);
 				// Записываем содержимое поля
 				packet.Write(field.Contents, 0, field.Contents.Length);

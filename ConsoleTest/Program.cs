@@ -31,3 +31,26 @@ TestPacket packetDes = MyPacketSerializer.Deserialize<TestPacket>(packetSer);
 Console.WriteLine($"IntValue = {packetDes.IntValue}\n" +
 					$"DoubleValue = {packetDes.DoubleValue}\n" +
 					$"BooleanValue = {packetDes.BooleanValue}\n");
+
+
+
+MyPacket pack = MyPacket.Create(0, 0);
+pack.SetValue(1, 12345);
+pack.SetValue(2, 2345);
+Console.WriteLine("pack.Encrypted: " + pack.Encrypted);
+
+MyPacket? packetEncrypted = pack.Encrypt();
+byte[] encr = new byte[0];
+if (packetEncrypted != null)
+{
+	Console.WriteLine("packetEncrypted.Encrypted: " + packetEncrypted.Encrypted);
+	encr = packetEncrypted.ToPacket();
+}
+
+MyPacket? packetDecrypted = MyPacket.Create(encr);
+if (packetDecrypted != null)
+{
+	Console.WriteLine("packetDecrypted.Encrypted: " + packetDecrypted.Encrypted);
+	Console.WriteLine(packetDecrypted.GetValue<int>(1));
+	Console.WriteLine(packetDecrypted.GetValue<int>(2));
+}

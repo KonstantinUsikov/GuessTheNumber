@@ -63,7 +63,7 @@ namespace ConsoleServer
 
 				// Создаем объект пакета и обрабатываем его
 				MyPacket? packet = MyPacket.Create(trimBuff);
-				if (packet != null)
+                if (packet != null)
 				{
 					ProcessIncomingPacket(packet);
 				}

@@ -1,16 +1,22 @@
 ﻿namespace ClassLibraryMyProtocol
 {
 	/// <summary>
-	/// Класс для преобразования значения перечисления MyPacketType в байты и наоборот.
+	/// Класс для преобразования значения перечисления MyPacketType в байты заголовков и наоборот.
 	/// </summary>
 	public static class MyPacketTypeManager
 	{
-		// Словарь, по значению перечисления MyPacketType позволяет получить тип и подтип пакета (byte, byte)
+		/// <summary>
+		/// Словарь, по значению перечисления MyPacketType позволяет получить тип и подтип пакета (byte, byte)
+		/// </summary>
 		private static readonly Dictionary<MyPacketType, (byte, byte)> FromTypeToByteDictionary = 
 			new Dictionary<MyPacketType, (byte, byte)>();
-		// Словарь, по типу и подтипу пакета (byte, byte) позволяет получить значение перечисления MyPacketType
+
+		/// <summary>
+		/// Словарь, по типу и подтипу пакета (byte, byte) позволяет получить значение перечисления MyPacketType
+		/// </summary>
 		private static readonly Dictionary<(byte, byte), MyPacketType> FromByteToTypeDictionary = 
 			new Dictionary<(byte, byte), MyPacketType>();
+
 
 		/// <summary>
 		/// Статический конструктор, регистрирует типы пакетов.
@@ -31,6 +37,7 @@
 			FromTypeToByteDictionary[packetType] = (type, subtype);
 			FromByteToTypeDictionary[(type, subtype)] = packetType;
 		}
+
 
 		/// <summary>
 		/// Получить тип и подтип пакета по MyPacketType.

@@ -1,5 +1,8 @@
 ﻿namespace ClassLibraryMyProtocol
 {
+	/// <summary>
+	/// Пакет для тестирования.
+	/// </summary>
 	public class TestPacket
 	{
 		[MyField(0)]

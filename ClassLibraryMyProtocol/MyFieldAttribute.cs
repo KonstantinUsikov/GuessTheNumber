@@ -1,5 +1,8 @@
 ﻿namespace ClassLibraryMyProtocol
 {
+	/// <summary>
+	/// Атрибут, которым можно пометить поля пакета и указать их id.
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Field)]
 	public class MyFieldAttribute : Attribute
 	{

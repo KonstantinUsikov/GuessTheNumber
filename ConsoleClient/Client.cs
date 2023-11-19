@@ -4,6 +4,9 @@ using ClassLibraryMyProtocol;
 
 namespace ConsoleClient
 {
+	/// <summary>
+	/// Класс клиента, позволяет подключаться к серверу, отправлять и получать пакеты.
+	/// </summary>
 	public class Client
 	{
 		/// <summary>
@@ -136,7 +139,7 @@ namespace ConsoleClient
 			MyPacketHandshake handshakeReceived = MyPacketSerializer.Deserialize<MyPacketHandshake>(packet);
 
 			// Обрабатываем результат
-			if (handshakeReceived.MagicHandshakeNumber == TestHandshake.HandshakeNumber + 1)
+			if (handshakeReceived.MagicHandshakeNumber == MyPacketHandshake.HandshakeNumber + 1)
 			{
 				Console.WriteLine("Handshake successful!");
 			}
