@@ -86,6 +86,7 @@ namespace ConsoleClient
 				}
 				catch
 				{
+					// Если сервер отключился
 					Disconnect(true);
 					break;
 				}
@@ -172,6 +173,7 @@ namespace ConsoleClient
 					}
 					catch
 					{
+						// Если сервер отключился
 						Disconnect(true);
 						break;
 					}

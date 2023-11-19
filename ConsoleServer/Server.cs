@@ -90,7 +90,7 @@ namespace ConsoleServer
 					return; 
 				}
 
-				Console.WriteLine($"[!] Accepted client from {(IPEndPoint)clientSocket.RemoteEndPoint}");
+				Console.WriteLine($"[!] Accepted client from {clientSocket.RemoteEndPoint}");
 
 				// Добавляем клиента в список
 				ConnectedClient client = new ConnectedClient(clientSocket);
@@ -108,7 +108,7 @@ namespace ConsoleServer
 			// Удаляем клиента из списка
 			Clients.Remove(client);
 
-			Console.WriteLine($"[!] Client {(IPEndPoint)client.ClientSocket.RemoteEndPoint} disconnected");
+			Console.WriteLine($"[!] Client {client.ClientSocket.RemoteEndPoint} disconnected");
 		}
 	}
 }
