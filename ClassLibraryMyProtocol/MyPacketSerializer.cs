@@ -26,7 +26,7 @@ namespace ClassLibraryMyProtocol
 		/// </summary>
 		/// <param name="type"> тип пакета </param>
 		/// <param name="subtype"> подтип пакета </param>
-		/// <param name="obj"> класс пакета с атрибутами </param>
+		/// <param name="obj"> объект класса пакета с атрибутами </param>
 		/// <returns> пакет типа MyPacket </returns>
 		public static MyPacket Serialize(byte type, byte subtype, object obj)
 		{
@@ -34,13 +34,31 @@ namespace ClassLibraryMyProtocol
 			List<(FieldInfo, byte)> fields = GetFields(obj.GetType());
 
 			// Добавляем поля из полученного списка в пакет MyPacket
-			MyPacket packet = new MyPacket(type, subtype);
+			MyPacket packet = MyPacket.Create(type, subtype);
 			foreach ((FieldInfo, byte) field in fields)
 			{
 				packet.SetValue(field.Item2, field.Item1.GetValue(obj));
 			}
 
 			return packet;
+		}
+
+		/// <summary>
+		/// Сериализация из класса с атрибутами в класс MyPacket.
+		/// </summary>
+		/// <param name="packetType"> тип пакета </param>
+		/// <param name="obj"> объект класса пакета с атрибутами </param>
+		/// <returns> пакет типа MyPacket </returns>
+		public static MyPacket? Serialize(MyPacketType packetType, object obj)
+		{
+			// Получаем тип и подтип пакета 
+			(byte, byte)? types = MyPacketTypeManager.ConvertFromTypeToByte(packetType);
+			if (!types.HasValue)
+			{
+				return null;
+			}
+
+			return Serialize(types.Value.Item1, types.Value.Item2, obj);
 		}
 
 		/// <summary>

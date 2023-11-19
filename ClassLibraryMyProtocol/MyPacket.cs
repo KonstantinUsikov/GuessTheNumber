@@ -24,39 +24,33 @@ namespace ClassLibraryMyProtocol
 		public List<MyPacketField> Fields { get; set; } = new List<MyPacketField>();
 		#endregion
 
-		#region Конструкторы
+		#region Фабричные методы
 		/// <summary>
-		/// Конструктор пакета.
+		/// Запрещаем использование конструктора.
+		/// </summary>
+		private MyPacket() { }
+
+		/// <summary>
+		/// Фабричный метод для создания пакета.
 		/// </summary>
 		/// <param name="packetType"> тип пакета </param>
 		/// <param name="packetSubtype"> подтип пакета </param>
-		public MyPacket(byte packetType, byte packetSubtype) 
+		/// <returns> пакет </returns>
+		public static MyPacket Create(byte packetType, byte packetSubtype)
 		{
-			PacketType = packetType;
-			PacketSubtype = packetSubtype;
+			return new MyPacket
+			{
+				PacketType = packetType,
+				PacketSubtype = packetSubtype
+			};
 		}
 
 		/// <summary>
-		/// Конструктор пакета.
+		/// Фабричный метод для создания пакета.
 		/// </summary>
 		/// <param name="packet"> представление пакета в виде масива байт </param>
-		public MyPacket(byte[] packet)
-		{
-			MyPacket? myPacket = Parse(packet);
-			if (myPacket != null)
-			{
-				PacketType = myPacket.PacketType;
-				PacketSubtype = myPacket.PacketSubtype;
-				Fields = myPacket.Fields;
-			}
-		}
-
-		/// <summary>
-		/// Перевод пакета из массива байт в класс.
-		/// </summary>
-		/// <param name="packet"> пакет (массив байт) </param>
-		/// <returns> объект класса MyPacket </returns>
-		private MyPacket? Parse(byte[] packet)
+		/// <returns> пакет </returns>
+		public static MyPacket? Create(byte[] packet)
 		{
 			// Проверка размера пакета
 			if (packet.Length < 7)
@@ -81,7 +75,7 @@ namespace ClassLibraryMyProtocol
 			byte type = packet[3];
 			byte subtype = packet[4];
 
-			MyPacket myPacket = new MyPacket(type, subtype);
+			MyPacket myPacket = MyPacket.Create(type, subtype);
 
 			// Получаем поля пакета
 			byte[] fields = packet.Skip(5).ToArray();
