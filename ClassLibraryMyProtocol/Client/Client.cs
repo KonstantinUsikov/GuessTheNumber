@@ -4,6 +4,7 @@ using ClassLibraryMyProtocol.Packets;
 using ClassLibraryMyProtocol.PacketTypes;
 using ClassLibraryMyProtocol.MyPacketMain;
 
+
 namespace ClassLibraryMyProtocol.Client
 {
     /// <summary>
@@ -42,7 +43,7 @@ namespace ClassLibraryMyProtocol.Client
 		/// </summary>
 		/// <param name="ip"> IP адрес сервера </param>
 		/// <param name="port"> порт сервера </param>
-        public void Connect(string ip, int port)
+		public void Connect(string ip, int port)
 		{
 			if (!Connected)
 			{
@@ -126,6 +127,9 @@ namespace ClassLibraryMyProtocol.Client
 				case MyPacketType.Handshake:
 					ProcessHandshake(packet);
 					break;
+				case MyPacketType.GuessTheNumber:
+					ProcessGuessTheNumber(packet);
+					break;
 				case MyPacketType.Unknown:
 					break;
 			}
@@ -146,6 +150,19 @@ namespace ClassLibraryMyProtocol.Client
 				Console.WriteLine("Handshake successful!");
 			}
 		}
+
+		/// <summary>
+		/// Обработка пакета GuessTheNumber.
+		/// </summary>
+		/// <param name="packet"> пакет </param>
+		private static void ProcessGuessTheNumber(MyPacket packet)
+		{
+			// Приводим пакет к типу MyPacketHandshake
+			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
+
+            // Обрабатываем результат
+            Console.WriteLine(guessTheNumberReceived.LessOrMore);
+        }
 
 		/// <summary>
 		/// Добавление пакета в очередь отправки.

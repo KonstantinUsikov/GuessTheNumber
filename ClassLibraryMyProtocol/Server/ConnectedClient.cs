@@ -25,6 +25,11 @@ namespace ClassLibraryMyProtocol.Server
 		/// </summary>
 		public event Action<ConnectedClient>? Disconnected;
 
+		/// <summary>
+		/// Загаданное число.
+		/// </summary>
+		private int? GuessedNumber { get; set; } = null;
+
 
 		/// <summary>
 		/// Конструктор.
@@ -87,6 +92,9 @@ namespace ClassLibraryMyProtocol.Server
 				case MyPacketType.Handshake:
 					ProcessHandshake(packet);
 					break;
+				case MyPacketType.GuessTheNumber:
+					ProcessGuessTheNumber(packet);
+					break;
 				case MyPacketType.Unknown:
 					break;
 			}
@@ -111,6 +119,66 @@ namespace ClassLibraryMyProtocol.Server
 
 			// Приводим пакет к MyPacket и отправляем его клиенту
 			MyPacket? packetToSend = MyPacketSerializer.Serialize(MyPacketType.Handshake, handshakeAnswer);
+			if (packetToSend != null)
+			{
+				AddPacketToSendingQueue(packetToSend.ToPacket());
+			}
+		}
+
+		/// <summary>
+		/// Обработка пакета игры "Угадай число", формирование ответа.
+		/// </summary>
+		/// <param name="packet"> пакет </param>
+		private void ProcessGuessTheNumber(MyPacket packet)
+		{
+			Console.WriteLine("Recieved GuessTheNumber packet.");
+
+			// Приводим пакет к типу GuessTheNumberPacket
+			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
+
+			// Обрабатываем пакет, подготавливаем ответ
+			GuessTheNumberPacket guessTheNumberAnswer;
+			if (GuessedNumber == null)
+			{
+				Random random = new Random();
+				GuessedNumber = random.Next(guessTheNumberReceived.Min, guessTheNumberReceived.Max + 1);
+				guessTheNumberAnswer = new GuessTheNumberPacket
+				{
+					Min = 1,
+					Max = 1,
+					Guess = 1,
+					LessOrMore = 1
+				};
+			}
+			else
+			{
+				int lessOrMore;
+				if (guessTheNumberReceived.Guess < GuessedNumber)
+				{
+					lessOrMore = -1;
+				}
+				else if (guessTheNumberReceived.Guess > GuessedNumber)
+				{
+					lessOrMore = 1;
+				}
+				else
+				{
+					lessOrMore = 0;
+				}
+
+				guessTheNumberAnswer = new GuessTheNumberPacket
+				{
+					Min = 0,
+					Max = 0,
+					Guess = 0,
+					LessOrMore = lessOrMore
+				};
+			}
+
+			Console.WriteLine("Answering...");
+
+			// Приводим пакет к MyPacket и отправляем его клиенту
+			MyPacket? packetToSend = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberAnswer);
 			if (packetToSend != null)
 			{
 				AddPacketToSendingQueue(packetToSend.ToPacket());

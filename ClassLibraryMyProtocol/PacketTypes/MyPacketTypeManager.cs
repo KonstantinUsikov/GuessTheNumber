@@ -24,7 +24,8 @@
         static MyPacketTypeManager()
         {
             RegisterType(MyPacketType.Handshake, 1, 0);
-        }
+			RegisterType(MyPacketType.GuessTheNumber, 2, 0);
+		}
 
         /// <summary>
         /// Регистрация типа пакета.

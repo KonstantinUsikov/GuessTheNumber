@@ -6,6 +6,7 @@
     public enum MyPacketType
     {
         Handshake,
+        GuessTheNumber,
         Unknown
     }
 }

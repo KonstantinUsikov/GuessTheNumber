@@ -18,14 +18,29 @@ AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
 Console.WriteLine("Sending handshake packet..");
 Thread.Sleep(5000);
 
+//// Создаем пакет для отправки
+//MyPacketHandshake handshakePacket = new MyPacketHandshake
+//{
+//	MagicHandshakeNumber = MyPacketHandshake.HandshakeNumber
+//};
+
+//// Приводим пакет к MyPacket
+//MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.Handshake, handshakePacket);
+//if (packet != null)
+//{
+//	// Отправляем пакет серверу
+//	client.AddPacketToSendingQueue(packet.ToPacket());
+//}
+
 // Создаем пакет для отправки
-MyPacketHandshake handshakePacket = new MyPacketHandshake
+GuessTheNumberPacket guessTheNumberPacket = new GuessTheNumberPacket
 {
-	MagicHandshakeNumber = MyPacketHandshake.HandshakeNumber
+	Min = 0,
+	Max = 100
 };
 
 // Приводим пакет к MyPacket
-MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.Handshake, handshakePacket);
+MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket);
 if (packet != null)
 {
 	// Отправляем пакет серверу
