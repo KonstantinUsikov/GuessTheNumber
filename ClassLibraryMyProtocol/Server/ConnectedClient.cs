@@ -1,4 +1,5 @@
-﻿using ClassLibraryMyProtocol.MyPacketMain;
+﻿using ClassLibraryMyProtocol.Client;
+using ClassLibraryMyProtocol.MyPacketMain;
 using ClassLibraryMyProtocol.Packets;
 using ClassLibraryMyProtocol.PacketTypes;
 using System.Net.Sockets;
@@ -30,18 +31,29 @@ namespace ClassLibraryMyProtocol.Server
 		/// </summary>
 		private int? GuessedNumber { get; set; } = null;
 
+		/// <summary>
+		/// Отправить информацию на форму.
+		/// </summary>
+		public event Action<string>? LogInformation;
+
+		/// <summary>
+		/// Диспетчер, позволяющий взаимодействовать с элементами из формы в другом потоке.
+		/// </summary>
+		private readonly IUiDispatcher? uiDispatcher;
 
 		/// <summary>
 		/// Конструктор.
 		/// </summary>
 		/// <param name="clientSocket"> сокет клиента </param>
-		public ConnectedClient(Socket clientSocket)
+		public ConnectedClient(Socket clientSocket, Action<string>? LogInformation = null, IUiDispatcher? uiDispatcher = null)
 		{
 			ClientSocket = clientSocket;
 
 			// Запустить задачи для получения и отправки пакетов
 			Task.Run(ListenIncomingPackets);
 			Task.Run(SendPackets);
+			this.LogInformation = LogInformation;
+			this.uiDispatcher = uiDispatcher;
 		}
 
 		/// <summary>
@@ -132,6 +144,7 @@ namespace ClassLibraryMyProtocol.Server
 		private void ProcessGuessTheNumber(MyPacket packet)
 		{
 			Console.WriteLine("Recieved GuessTheNumber packet.");
+			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Получен пакет GuessTheNumber."));
 
 			// Приводим пакет к типу GuessTheNumberPacket
 			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
@@ -144,11 +157,13 @@ namespace ClassLibraryMyProtocol.Server
 				GuessedNumber = random.Next(guessTheNumberReceived.Min, guessTheNumberReceived.Max + 1);
 				guessTheNumberAnswer = new GuessTheNumberPacket
 				{
-					Min = 1,
-					Max = 1,
-					Guess = 1,
-					LessOrMore = 1
+					Min = guessTheNumberReceived.Min,
+					Max = guessTheNumberReceived.Max,
+					Guess = 0,
+					LessOrMore = 2
 				};
+
+				uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Min = {guessTheNumberReceived.Min}, Max = {guessTheNumberReceived.Max}, Я загадал {GuessedNumber}."));
 			}
 			else
 			{
@@ -170,12 +185,15 @@ namespace ClassLibraryMyProtocol.Server
 				{
 					Min = 0,
 					Max = 0,
-					Guess = 0,
+					Guess = guessTheNumberReceived.Guess,
 					LessOrMore = lessOrMore
 				};
+
+				uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Клиент предположил {guessTheNumberReceived.Guess}, Я загадал {GuessedNumber}."));
 			}
 
 			Console.WriteLine("Answering...");
+			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Отправляю ответ клиенту..."));
 
 			// Приводим пакет к MyPacket и отправляем его клиенту
 			MyPacket? packetToSend = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberAnswer);

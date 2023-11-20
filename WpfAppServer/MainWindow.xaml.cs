@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ClassLibraryMyProtocol;
+using ClassLibraryMyProtocol.Client;
+using ClassLibraryMyProtocol.Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using WpfLibrary;
 
 namespace WpfAppServer
 {
@@ -20,11 +25,26 @@ namespace WpfAppServer
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		private Server server;
+
 		public MainWindow()
 		{
 			InitializeComponent();
 
-			textBoxLogs.Text = "Текст";
+			Dispatcher? dispatcher = Application.Current.Dispatcher;
+			server = new Server(new WpfUiDispatcher(dispatcher));
+			server.LogInformation += Server_LogInfo;
+			server.Start();
+		}
+
+		private void Server_LogInfo(string text)
+		{
+			textBoxLogs.Text += text += "\n";
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			server.Stop();
 		}
 	}
 }

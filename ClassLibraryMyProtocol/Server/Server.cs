@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Net;
+using ClassLibraryMyProtocol.Client;
 
 namespace ClassLibraryMyProtocol.Server
 {
@@ -23,13 +24,24 @@ namespace ClassLibraryMyProtocol.Server
 		/// </summary>
 		public bool Listening;
 
+		/// <summary>
+		/// Отправить информацию на форму.
+		/// </summary>
+		public event Action<string>? LogInformation;
+
+		/// <summary>
+		/// Диспетчер, позволяющий взаимодействовать с элементами из формы в другом потоке.
+		/// </summary>
+		private readonly IUiDispatcher? uiDispatcher;
+
 
 		/// <summary>
 		/// Конструктор.
 		/// </summary>
-		public Server()
+		public Server(IUiDispatcher? uiDispatcher = null)
 		{
 			// Создаем сокет сервера
+			this.uiDispatcher = uiDispatcher;
 			IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
 			ServerSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		}
@@ -91,9 +103,10 @@ namespace ClassLibraryMyProtocol.Server
 				}
 
 				Console.WriteLine($"[!] Accepted client from {clientSocket.RemoteEndPoint}");
+				uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[!] Подключился клиент {clientSocket.RemoteEndPoint}"));
 
 				// Добавляем клиента в список
-				ConnectedClient client = new ConnectedClient(clientSocket);
+				ConnectedClient client = new ConnectedClient(clientSocket, LogInformation, uiDispatcher);
 				client.Disconnected += OnClientDisconnected;
 				Clients.Add(client);
 			}
@@ -109,6 +122,7 @@ namespace ClassLibraryMyProtocol.Server
 			Clients.Remove(client);
 
 			Console.WriteLine($"[!] Client {client.ClientSocket.RemoteEndPoint} disconnected");
+			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[!] Клиент {client.ClientSocket.RemoteEndPoint} отключился"));
 		}
 	}
 }

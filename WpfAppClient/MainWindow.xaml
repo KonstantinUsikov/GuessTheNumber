@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfAppClient"
         mc:Ignorable="d"
-        Title="Клиент" Height="450" Width="800">
+        Title="Клиент" Height="450" Width="800" Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -110,7 +110,7 @@
                     HorizontalContentAlignment="Center" 
                     VerticalContentAlignment="Center"
                     IsEnabled="False"
-                    Margin="10,10,10,10"/>
+                    Margin="10,10,10,10" Click="buttonGuess_Click"/>
             </Grid>
 
             <Grid Grid.Column="1">
@@ -120,12 +120,12 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0"
-                    Content="Меньше чем" 
+                    Content="Больше чем" 
                     FontSize="20" 
                     HorizontalContentAlignment="Center" 
                     VerticalContentAlignment="Center"/>
 
-                <TextBox x:Name="textBoxLessThan"
+                <TextBox x:Name="textBoxMoreThan"
                     Grid.Row="1" 
                     TextWrapping="Wrap" 
                     Text="" 
@@ -149,12 +149,12 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0"
-                    Content="Больше чем" 
+                    Content="Меньше чем" 
                     FontSize="20" 
                     HorizontalContentAlignment="Center" 
                     VerticalContentAlignment="Center"/>
 
-                <TextBox x:Name="textBoxMoreThan"
+                <TextBox x:Name="textBoxLessThan"
                     Grid.Row="1" 
                     TextWrapping="Wrap" 
                     Text="" 

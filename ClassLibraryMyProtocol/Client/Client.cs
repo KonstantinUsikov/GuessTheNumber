@@ -3,14 +3,14 @@ using System.Net;
 using ClassLibraryMyProtocol.Packets;
 using ClassLibraryMyProtocol.PacketTypes;
 using ClassLibraryMyProtocol.MyPacketMain;
-
+using System.Threading;
 
 namespace ClassLibraryMyProtocol.Client
 {
-    /// <summary>
-    /// Класс клиента, позволяет подключаться к серверу, отправлять и получать пакеты.
-    /// </summary>
-    public class Client
+	/// <summary>
+	/// Класс клиента, позволяет подключаться к серверу, отправлять и получать пакеты.
+	/// </summary>
+	public class Client
 	{
 		/// <summary>
 		/// Сокет.
@@ -27,12 +27,38 @@ namespace ClassLibraryMyProtocol.Client
 		/// </summary>
 		public bool Connected;
 
+		/// <summary>
+		/// Число, названное пользователем меньше загаданного.
+		/// </summary>
+		public event Action<string>? GuessIsLessThanNumber;
+
+		/// <summary>
+		/// Число, названное пользователем больше загаданного.
+		/// </summary>
+		public event Action<string>? GuessIsMoreThanNumber;
+
+		/// <summary>
+		/// Число, названное пользователем равно загаданному.
+		/// </summary>
+		public event Action? GuessIsEqualToNumber;
+
+		/// <summary>
+		/// Сурвер выключился.
+		/// </summary>
+		public event Action? ServerHasDisconnected;
+
+		/// <summary>
+		/// Диспетчер, позволяющий взаимодействовать с элементами из формы в другом потоке.
+		/// </summary>
+		private readonly IUiDispatcher? uiDispatcher;
+
 
 		/// <summary>
 		/// Конструктор.
 		/// </summary>
-		public Client()
+		public Client(IUiDispatcher? uiDispatcher = null)
         {
+			this.uiDispatcher = uiDispatcher;
 			IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
 			ClientSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		}
@@ -66,7 +92,8 @@ namespace ClassLibraryMyProtocol.Client
             {
 				if (hasServerClosed)
 				{
-                    Console.WriteLine("Server has closed");
+					uiDispatcher?.Invoke(() => ServerHasDisconnected?.Invoke());
+					Console.WriteLine("Server has closed");
                 }
 
 				// Закрываем соединение
@@ -93,7 +120,7 @@ namespace ClassLibraryMyProtocol.Client
 				catch
 				{
 					// Если сервер отключился
-					Disconnect(true);
+					Disconnect();
 					break;
 				}
 
@@ -155,13 +182,24 @@ namespace ClassLibraryMyProtocol.Client
 		/// Обработка пакета GuessTheNumber.
 		/// </summary>
 		/// <param name="packet"> пакет </param>
-		private static void ProcessGuessTheNumber(MyPacket packet)
+		private void ProcessGuessTheNumber(MyPacket packet)
 		{
-			// Приводим пакет к типу MyPacketHandshake
+			// Приводим пакет к типу GuessTheNumberPacket
 			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
 
-            // Обрабатываем результат
-            Console.WriteLine(guessTheNumberReceived.LessOrMore);
+			// Обрабатываем результат
+			if (guessTheNumberReceived.LessOrMore == 1)
+			{
+				uiDispatcher?.Invoke(() => GuessIsLessThanNumber?.Invoke(guessTheNumberReceived.Guess.ToString()));
+			}
+			else if (guessTheNumberReceived.LessOrMore == -1)
+			{
+				uiDispatcher?.Invoke(() => GuessIsMoreThanNumber?.Invoke(guessTheNumberReceived.Guess.ToString()));
+			}
+			else if (guessTheNumberReceived.LessOrMore == 0)
+			{
+				uiDispatcher?.Invoke(() => GuessIsEqualToNumber?.Invoke());
+			}
         }
 
 		/// <summary>

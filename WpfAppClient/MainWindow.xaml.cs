@@ -1,4 +1,9 @@
-﻿using System;
+﻿using ClassLibraryMyProtocol;
+using ClassLibraryMyProtocol.Client;
+using ClassLibraryMyProtocol.MyPacketMain;
+using ClassLibraryMyProtocol.Packets;
+using ClassLibraryMyProtocol.PacketTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +17,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using WpfLibrary;
 
 namespace WpfAppClient
 {
@@ -20,14 +27,30 @@ namespace WpfAppClient
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public MainWindow()
-		{
-			InitializeComponent();
-		}
-
+		private Client client;
 		private bool textBoxMinValid = true;
 		private bool textBoxMaxValid = true;
 		private bool gameStarted = false;
+
+		public MainWindow()
+		{
+			InitializeComponent();
+			Dispatcher? dispatcher = Application.Current.Dispatcher;
+			client = new Client(new WpfUiDispatcher(dispatcher));
+			client.GuessIsLessThanNumber += AppendTextBoxLessThan;
+			client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
+			client.GuessIsEqualToNumber += PlayerHasWon;
+			client.ServerHasDisconnected += ServerHasDisconnected;
+			try
+			{
+				client.Connect("127.0.0.1", 8080);
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Нет соединения с сервером");
+				throw;
+			}
+		}
 
 		private void textBoxMin_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -76,6 +99,80 @@ namespace WpfAppClient
 			textBoxGuess.IsEnabled = true;
 			buttonGuess.IsEnabled = true;
 
+			GuessTheNumberPacket guessTheNumberPacket = new GuessTheNumberPacket
+			{
+				Min = int.Parse(textBoxMin.Text),
+				Max = int.Parse(textBoxMax.Text)
+			};
+
+			// Приводим пакет к MyPacket
+			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket);
+			if (packet != null)
+			{
+				// Отправляем пакет серверу
+				client.AddPacketToSendingQueue(packet.ToPacket());
+			}
+		}
+
+		private void buttonGuess_Click(object sender, RoutedEventArgs e)
+		{
+			GuessTheNumberPacket guessTheNumberPacket = new GuessTheNumberPacket
+			{
+				Guess = int.Parse(textBoxGuess.Text)
+			};
+
+			// Приводим пакет к MyPacket
+			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket);
+			if (packet != null)
+			{
+				// Отправляем пакет серверу
+				client.AddPacketToSendingQueue(packet.ToPacket());
+			}
+		}
+
+		private void AppendTextBoxLessThan(string text)
+		{
+			textBoxLessThan.Text += text + "\n";
+		}
+
+		private void AppendTextBoxMoreThan(string text)
+		{
+			textBoxMoreThan.Text += text + "\n";
+		}
+
+		private void PlayerHasWon()
+		{
+			MessageBox.Show("Вы выиграли!");
+			client.Disconnect();
+			var dispatcher = Application.Current.Dispatcher;
+			client = new Client(new WpfUiDispatcher(dispatcher));
+			client.GuessIsLessThanNumber += AppendTextBoxLessThan;
+			client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
+			client.GuessIsEqualToNumber += PlayerHasWon;
+			client.ServerHasDisconnected += ServerHasDisconnected;
+			client.Connect("127.0.0.1", 8080);
+
+			gameStarted = false;
+			buttonStart.IsEnabled = true;
+			textBoxMin.IsEnabled = true;
+			textBoxMax.IsEnabled = true;
+			textBoxGuess.IsEnabled = false;
+			buttonGuess.IsEnabled = false;
+			textBoxLessThan.Text = "";
+			textBoxMoreThan.Text = "";
+			textBoxGuess.Text = "";
+		}
+
+		private void ServerHasDisconnected()
+		{
+			MessageBox.Show("Сервер отключился!");
+			client.Disconnect();
+			Close();
+		}
+
+		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			client.Disconnect();
 		}
 	}
 }
