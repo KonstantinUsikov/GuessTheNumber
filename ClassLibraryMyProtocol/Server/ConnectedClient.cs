@@ -151,7 +151,7 @@ namespace ClassLibraryMyProtocol.Server
 
 			// Обрабатываем пакет, подготавливаем ответ
 			GuessTheNumberPacket guessTheNumberAnswer;
-			if (GuessedNumber == null)
+			if (GuessedNumber == null || guessTheNumberReceived.NewGame == 1)
 			{
 				Random random = new Random();
 				GuessedNumber = random.Next(guessTheNumberReceived.Min, guessTheNumberReceived.Max + 1);

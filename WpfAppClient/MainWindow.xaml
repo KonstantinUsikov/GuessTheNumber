@@ -101,7 +101,7 @@
                     VerticalContentAlignment="Center"
                     Height="50"
                     IsEnabled="False"
-                    Margin="10,5,10,5"/>
+                    Margin="10,5,10,5" TextChanged="textBoxGuess_TextChanged"/>
 
                 <Button x:Name="buttonGuess" 
                     Grid.Row="2"

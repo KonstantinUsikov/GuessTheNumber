@@ -88,13 +88,13 @@ namespace ClassLibraryMyProtocol.Client
 		/// </summary>
 		public void Disconnect(bool hasServerClosed = false)
 		{
-            if (Connected)
+			if (Connected)
             {
 				if (hasServerClosed)
 				{
 					uiDispatcher?.Invoke(() => ServerHasDisconnected?.Invoke());
 					Console.WriteLine("Server has closed");
-                }
+				}
 
 				// Закрываем соединение
 				ClientSocket.Shutdown(SocketShutdown.Both);
@@ -120,7 +120,7 @@ namespace ClassLibraryMyProtocol.Client
 				catch
 				{
 					// Если сервер отключился
-					Disconnect();
+					Disconnect(true);
 					break;
 				}
 

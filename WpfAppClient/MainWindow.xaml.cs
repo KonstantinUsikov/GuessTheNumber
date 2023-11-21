@@ -31,6 +31,7 @@ namespace WpfAppClient
 		private bool textBoxMinValid = true;
 		private bool textBoxMaxValid = true;
 		private bool gameStarted = false;
+		private int guessCount = 0;
 
 		public MainWindow()
 		{
@@ -97,12 +98,12 @@ namespace WpfAppClient
 			textBoxMin.IsEnabled = false;
 			textBoxMax.IsEnabled = false;
 			textBoxGuess.IsEnabled = true;
-			buttonGuess.IsEnabled = true;
 
 			GuessTheNumberPacket guessTheNumberPacket = new GuessTheNumberPacket
 			{
 				Min = int.Parse(textBoxMin.Text),
-				Max = int.Parse(textBoxMax.Text)
+				Max = int.Parse(textBoxMax.Text),
+				NewGame = 1
 			};
 
 			// Приводим пакет к MyPacket
@@ -116,6 +117,7 @@ namespace WpfAppClient
 
 		private void buttonGuess_Click(object sender, RoutedEventArgs e)
 		{
+			guessCount++;
 			GuessTheNumberPacket guessTheNumberPacket = new GuessTheNumberPacket
 			{
 				Guess = int.Parse(textBoxGuess.Text)
@@ -142,15 +144,15 @@ namespace WpfAppClient
 
 		private void PlayerHasWon()
 		{
-			MessageBox.Show("Вы выиграли!");
-			client.Disconnect();
-			var dispatcher = Application.Current.Dispatcher;
-			client = new Client(new WpfUiDispatcher(dispatcher));
-			client.GuessIsLessThanNumber += AppendTextBoxLessThan;
-			client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
-			client.GuessIsEqualToNumber += PlayerHasWon;
-			client.ServerHasDisconnected += ServerHasDisconnected;
-			client.Connect("127.0.0.1", 8080);
+			MessageBox.Show($"Вы выиграли! Количество попыток: {guessCount}");
+			//client.Disconnect();
+			//var dispatcher = Application.Current.Dispatcher;
+			//client = new Client(new WpfUiDispatcher(dispatcher));
+			//client.GuessIsLessThanNumber += AppendTextBoxLessThan;
+			//client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
+			//client.GuessIsEqualToNumber += PlayerHasWon;
+			//client.ServerHasDisconnected += ServerHasDisconnected;
+			//client.Connect("127.0.0.1", 8080);
 
 			gameStarted = false;
 			buttonStart.IsEnabled = true;
@@ -161,6 +163,7 @@ namespace WpfAppClient
 			textBoxLessThan.Text = "";
 			textBoxMoreThan.Text = "";
 			textBoxGuess.Text = "";
+			guessCount = 0;
 		}
 
 		private void ServerHasDisconnected()
@@ -173,6 +176,25 @@ namespace WpfAppClient
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			client.Disconnect();
+		}
+
+		private void textBoxGuess_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (int.TryParse(textBoxGuess.Text, out int result))
+			{
+				if (result <= int.Parse(textBoxMax.Text) && result >= int.Parse(textBoxMin.Text))
+				{
+					buttonGuess.IsEnabled = true;
+				}
+				else
+				{
+					buttonGuess.IsEnabled = false;
+				}
+			}
+			else
+			{
+				buttonGuess.IsEnabled = false;
+			}
 		}
 	}
 }
