@@ -35,14 +35,19 @@ namespace ClassLibraryMyProtocol.Server
 		private readonly IUiDispatcher? uiDispatcher;
 
 
+		private string ip;
+		private int port;
+
 		/// <summary>
 		/// Конструктор.
 		/// </summary>
-		public Server(IUiDispatcher? uiDispatcher = null)
+		public Server(string ip, int port, IUiDispatcher? uiDispatcher = null)
 		{
+			this.ip = ip;
+			this.port = port;
 			// Создаем сокет сервера
 			this.uiDispatcher = uiDispatcher;
-			IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+			IPAddress ipAddress = IPAddress.Parse(ip);
 			ServerSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		}
 
@@ -55,7 +60,7 @@ namespace ClassLibraryMyProtocol.Server
 			if (!Listening)
 			{
 				// Cвязываем сокет с локальным адресом и портом
-				ServerSocket.Bind(new IPEndPoint(IPAddress.Any, 8080));
+				ServerSocket.Bind(new IPEndPoint(IPAddress.Any, port));
 
 				// Переводим сокет в режим прослушивания входящих соединений
 				ServerSocket.Listen(5);

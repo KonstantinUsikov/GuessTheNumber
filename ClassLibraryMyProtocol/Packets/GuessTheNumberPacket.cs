@@ -19,7 +19,7 @@ namespace ClassLibraryMyProtocol.Packets
 		[MyField(4)]
 		public int LessOrMore;
 
-		[MyField(4)]
+		[MyField(5)]
 		public int NewGame;
 	}
 }

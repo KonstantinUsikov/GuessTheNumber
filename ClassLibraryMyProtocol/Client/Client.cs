@@ -117,10 +117,10 @@ namespace ClassLibraryMyProtocol.Client
 				{
 					ClientSocket.Receive(buff);
 				}
-				catch
+				catch (SocketException ex)
 				{
 					// Если сервер отключился
-					Disconnect(true);
+					Disconnect(ex.SocketErrorCode == SocketError.ConnectionReset);
 					break;
 				}
 
@@ -186,6 +186,10 @@ namespace ClassLibraryMyProtocol.Client
 		{
 			// Приводим пакет к типу GuessTheNumberPacket
 			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
+			if (guessTheNumberReceived.NewGame == 1)
+			{
+				return;
+			}
 
 			// Обрабатываем результат
 			if (guessTheNumberReceived.LessOrMore == 1)
@@ -231,10 +235,10 @@ namespace ClassLibraryMyProtocol.Client
 					{
 						ClientSocket.Send(packet);
 					}
-					catch
+					catch (SocketException ex)
 					{
 						// Если сервер отключился
-						Disconnect(true);
+						Disconnect(ex.SocketErrorCode == SocketError.ConnectionReset);
 						break;
 					}
 				}

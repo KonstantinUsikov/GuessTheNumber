@@ -6,6 +6,7 @@ using ClassLibraryMyProtocol.PacketTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Printing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -42,21 +43,51 @@ namespace WpfAppClient
 			client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
 			client.GuessIsEqualToNumber += PlayerHasWon;
 			client.ServerHasDisconnected += ServerHasDisconnected;
+		}
+
+		private void buttonConnect_Click(object sender, RoutedEventArgs e)
+		{
+			string input = textBoxIp.Text;
+
+			// Делим строку на части
+			string[] parts = input.Split(':');
+			if (parts.Length != 2)
+			{
+				MessageBox.Show("Неверный формат данных.");
+				return;
+			}
+
+			// Получаем данные из строк
+			string ip = parts[0];
+			if (!int.TryParse(parts[1], out int port))
+			{
+				MessageBox.Show("Не удалось привести порт к числу.");
+				return;
+			}
+
+			// Пробуем подключиться к серверу
 			try
 			{
-				client.Connect("127.0.0.1", 8080);
+				client.Connect(ip, port);
+				textBoxMin.IsEnabled = true;
+				textBoxMax.IsEnabled = true;
+				buttonStart.IsEnabled = true;
+				textBoxIp.IsEnabled = false;
+				buttonConnect.IsEnabled = false;
 			}
 			catch (Exception)
 			{
-				MessageBox.Show("Нет соединения с сервером");
-				throw;
+				MessageBox.Show("Не удалось подключиться к серверу");
 			}
 		}
 
 		private void textBoxMin_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			if (textBoxMin == null)
+			{
+				return;
+			}
 			textBoxMinValid = int.TryParse(textBoxMin.Text, out int result);
-
 			if (buttonStart != null)
 			{
 				if (textBoxMinValid && textBoxMaxValid && 
@@ -74,8 +105,11 @@ namespace WpfAppClient
 
 		private void textBoxMax_TextChanged(object sender, TextChangedEventArgs e)
 		{
+			if (textBoxMax == null)
+			{
+				return;
+			}
 			textBoxMaxValid = int.TryParse(textBoxMax.Text, out int result);
-			
 			if (buttonStart != null)
 			{
 				if (textBoxMinValid && textBoxMaxValid &&
@@ -170,7 +204,17 @@ namespace WpfAppClient
 		{
 			MessageBox.Show("Сервер отключился!");
 			client.Disconnect();
-			Close();
+
+			textBoxIp.IsEnabled = true;
+			buttonConnect.IsEnabled = true;
+			textBoxMin.IsEnabled = false;
+			textBoxMax.IsEnabled = false;
+			buttonStart.IsEnabled = false;
+			textBoxGuess.IsEnabled = false;
+			buttonGuess.IsEnabled = false;
+			textBoxLessThan.Text = "";
+			textBoxMoreThan.Text = "";
+			textBoxGuess.Text = "";
 		}
 
 		private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

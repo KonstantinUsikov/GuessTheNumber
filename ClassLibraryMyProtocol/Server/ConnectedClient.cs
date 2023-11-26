@@ -143,11 +143,11 @@ namespace ClassLibraryMyProtocol.Server
 		/// <param name="packet"> пакет </param>
 		private void ProcessGuessTheNumber(MyPacket packet)
 		{
-			Console.WriteLine("Recieved GuessTheNumber packet.");
-			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Получен пакет GuessTheNumber."));
-
 			// Приводим пакет к типу GuessTheNumberPacket
 			GuessTheNumberPacket guessTheNumberReceived = MyPacketSerializer.Deserialize<GuessTheNumberPacket>(packet);
+
+			Console.WriteLine("Recieved GuessTheNumber packet.");
+			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Получен пакет GuessTheNumber: Min = {guessTheNumberReceived.Min}, Max = {guessTheNumberReceived.Max}, Guess = {guessTheNumberReceived.Guess}, LessOrMore = {guessTheNumberReceived.LessOrMore}, NewGame = {guessTheNumberReceived.NewGame}."));
 
 			// Обрабатываем пакет, подготавливаем ответ
 			GuessTheNumberPacket guessTheNumberAnswer;
@@ -157,12 +157,8 @@ namespace ClassLibraryMyProtocol.Server
 				GuessedNumber = random.Next(guessTheNumberReceived.Min, guessTheNumberReceived.Max + 1);
 				guessTheNumberAnswer = new GuessTheNumberPacket
 				{
-					Min = guessTheNumberReceived.Min,
-					Max = guessTheNumberReceived.Max,
-					Guess = 0,
-					LessOrMore = 2
+					NewGame = 1
 				};
-
 				uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Min = {guessTheNumberReceived.Min}, Max = {guessTheNumberReceived.Max}, Я загадал {GuessedNumber}."));
 			}
 			else
@@ -183,8 +179,6 @@ namespace ClassLibraryMyProtocol.Server
 
 				guessTheNumberAnswer = new GuessTheNumberPacket
 				{
-					Min = 0,
-					Max = 0,
 					Guess = guessTheNumberReceived.Guess,
 					LessOrMore = lessOrMore
 				};
@@ -193,7 +187,7 @@ namespace ClassLibraryMyProtocol.Server
 			}
 
 			Console.WriteLine("Answering...");
-			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Отправляю ответ клиенту..."));
+			uiDispatcher?.Invoke(() => LogInformation?.Invoke($"[{ClientSocket.RemoteEndPoint}] Отправляю ответ клиенту: Min = {guessTheNumberAnswer.Min}, Max = {guessTheNumberAnswer.Max}, Guess = {guessTheNumberAnswer.Guess}, LessOrMore = {guessTheNumberAnswer.LessOrMore}, NewGame = {guessTheNumberAnswer.NewGame}"));
 
 			// Приводим пакет к MyPacket и отправляем его клиенту
 			MyPacket? packetToSend = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberAnswer);
