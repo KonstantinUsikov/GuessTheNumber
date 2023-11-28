@@ -55,3 +55,19 @@ if (packetDecrypted != null)
 	Console.WriteLine(packetDecrypted.GetValue<int>(1));
 	Console.WriteLine(packetDecrypted.GetValue<int>(2));
 }
+
+
+MyPacketHandshake p = new MyPacketHandshake
+{
+	MagicHandshakeNumber = 11
+};
+
+MyPacket? p1 = MyPacketSerializer.Serialize(ClassLibraryMyProtocol.PacketTypes.MyPacketType.Handshake, p);
+byte[] b1 = p1.ToPacket();
+MyPacket? pp = p1.Encrypt();
+byte[] b2 = pp.ToPacket();
+Console.WriteLine(pp.PacketType);
+
+MyPacket? ppp = MyPacket.Create(pp.ToPacket());
+byte[] b3 = ppp.ToPacket();
+Console.WriteLine(ppp.GetValue<int>(1));

@@ -125,13 +125,18 @@ namespace ClassLibraryMyProtocol.Client
 				}
 
 				// Получаем байты до конца пакета
-				byte[] trimBuff = buff.TakeWhile((b, i) =>
+				int count = buff.Length;
+				for (int i = count - 1; i >= 0; i--)
 				{
-					return !(b == 0xFF && buff[i + 1] == 0);
-				}).Concat(new byte[] { 0xFF, 0 }).ToArray();
+					if (buff[i] == 0)
+						count--;
+					else
+						break;
+				}
+				Array.Resize(ref buff, count + 1);
 
 				// Создаем объект пакета и обрабатываем его
-				MyPacket? packet = MyPacket.Create(trimBuff);
+				MyPacket? packet = MyPacket.Create(buff);
 				if (packet != null)
 				{
 					ProcessIncomingPacket(packet);

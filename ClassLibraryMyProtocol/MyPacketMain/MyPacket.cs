@@ -60,10 +60,10 @@ namespace ClassLibraryMyProtocol.MyPacketMain
         public static MyPacket? Create(byte[] packet, bool markAsEncrypted = false)
         {
             // Проверка размера пакета
-            if (packet.Length < 7)
-            {
-                return null;
-            }
+            //if (packet.Length < 7)
+            //{
+            //    return null;
+            //}
 
             // Проверка байтов начала пакета
             bool encrypted;

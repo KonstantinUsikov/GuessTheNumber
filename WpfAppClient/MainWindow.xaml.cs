@@ -141,7 +141,7 @@ namespace WpfAppClient
 			};
 
 			// Приводим пакет к MyPacket
-			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket);
+			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket)?.Encrypt();
 			if (packet != null)
 			{
 				// Отправляем пакет серверу
@@ -158,7 +158,7 @@ namespace WpfAppClient
 			};
 
 			// Приводим пакет к MyPacket
-			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket);
+			MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.GuessTheNumber, guessTheNumberPacket)?.Encrypt();
 			if (packet != null)
 			{
 				// Отправляем пакет серверу
@@ -179,14 +179,6 @@ namespace WpfAppClient
 		private void PlayerHasWon()
 		{
 			MessageBox.Show($"Вы выиграли! Количество попыток: {guessCount}");
-			//client.Disconnect();
-			//var dispatcher = Application.Current.Dispatcher;
-			//client = new Client(new WpfUiDispatcher(dispatcher));
-			//client.GuessIsLessThanNumber += AppendTextBoxLessThan;
-			//client.GuessIsMoreThanNumber += AppendTextBoxMoreThan;
-			//client.GuessIsEqualToNumber += PlayerHasWon;
-			//client.ServerHasDisconnected += ServerHasDisconnected;
-			//client.Connect("127.0.0.1", 8080);
 
 			gameStarted = false;
 			buttonStart.IsEnabled = true;

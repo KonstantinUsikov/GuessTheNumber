@@ -16,7 +16,7 @@ AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
 };
 
 Console.WriteLine("Sending handshake packet..");
-Thread.Sleep(5000);
+Thread.Sleep(1000);
 
 // Создаем пакет для отправки
 MyPacketHandshake handshakePacket = new MyPacketHandshake
@@ -25,9 +25,10 @@ MyPacketHandshake handshakePacket = new MyPacketHandshake
 };
 
 // Приводим пакет к MyPacket
-MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.Handshake, handshakePacket);
+MyPacket? packet = MyPacketSerializer.Serialize(MyPacketType.Handshake, handshakePacket)?.Encrypt();
 if (packet != null)
 {
+	byte[] arr = packet.ToPacket();
 	// Отправляем пакет серверу
 	client.AddPacketToSendingQueue(packet.ToPacket());
 }
